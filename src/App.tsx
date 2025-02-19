@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createTodo, deleteTodo, getTodos, USER_ID } from './api/todos';
+import {
+  createTodo,
+  deleteTodo,
+  getTodos,
+  updateTodo,
+  USER_ID,
+} from './api/todos';
 import {
   ErrorNotification,
   Footer,
@@ -103,6 +109,26 @@ export const App: React.FC = () => {
     [handleShowError],
   );
 
+  const handleUpdateTodo = useCallback(
+    async (todo: Todo) => {
+      try {
+        handleAddLoadingId(todo.id);
+
+        const updatedTodo = await updateTodo(todo);
+
+        setTodos(prev =>
+          prev.map(p => (p.id === updatedTodo.id ? updatedTodo : p)),
+        );
+      } catch (err) {
+        handleShowError('Unable to update a todo');
+        throw new Error('Unable to update a todo');
+      } finally {
+        handleRemoveLoadingId(todo.id);
+      }
+    },
+    [handleShowError],
+  );
+
   return (
     <div className="todoapp">
       <h1 className="todoapp__title">todos</h1>
@@ -114,6 +140,7 @@ export const App: React.FC = () => {
           titleRef={titleRef}
           onShowError={handleShowError}
           onFormSubmit={handleAddTodo}
+          onUpdate={handleUpdateTodo}
         />
 
         <TodoList>
@@ -123,6 +150,7 @@ export const App: React.FC = () => {
               todo={todo}
               isLoading={isLoading(todo.id)}
               onDelete={handleDeleteTodo}
+              onUpdate={handleUpdateTodo}
             />
           ))}
 

@@ -14,3 +14,7 @@ export const createTodo = (newTodo: Omit<Todo, 'id'>) => {
 export const deleteTodo = (id: Todo['id']) => {
   return client.delete(`/todos/${id}`);
 };
+
+export const updateTodo = (todo: Todo) => {
+  return client.patch<Todo>(`/todos/${todo.id}`, todo);
+};

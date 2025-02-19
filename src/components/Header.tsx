@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { FC, FormEvent, memo, useEffect, useMemo } from 'react';
+import { FC, FormEvent, memo, useCallback, useEffect, useMemo } from 'react';
 import { Todo } from '../types';
 import React from 'react';
 
@@ -9,10 +9,11 @@ type Props = {
   titleRef: React.RefObject<HTMLInputElement>;
   onShowError: (err: string) => void;
   onFormSubmit: (title: Todo['title']) => void;
+  onUpdate: (todo: Todo) => void;
 };
 
 export const Header: FC<Props> = memo(
-  ({ isLoading, todos, titleRef, onShowError, onFormSubmit }) => {
+  ({ isLoading, todos, titleRef, onShowError, onFormSubmit, onUpdate }) => {
     useEffect(() => {
       titleRef.current?.focus();
     });
@@ -35,15 +36,30 @@ export const Header: FC<Props> = memo(
       onFormSubmit(fieldValue);
     };
 
+    const handleToggleTodos = useCallback(() => {
+      if (isAllTodosCompleted) {
+        todos.forEach(todo => {
+          onUpdate({ ...todo, completed: !todo.completed });
+        });
+      }
+
+      todos
+        .filter(({ completed }) => !completed)
+        .forEach(todo => onUpdate({ ...todo, completed: !todo.completed }));
+    }, [isAllTodosCompleted, onUpdate, todos]);
+
     return (
       <header className="todoapp__header">
-        <button
-          type="button"
-          className={classNames('todoapp__toggle-all ', {
-            active: isAllTodosCompleted,
-          })}
-          data-cy="ToggleAllButton"
-        />
+        {todos.length ? (
+          <button
+            type="button"
+            className={classNames('todoapp__toggle-all ', {
+              active: isAllTodosCompleted,
+            })}
+            data-cy="ToggleAllButton"
+            onClick={handleToggleTodos}
+          />
+        ) : null}
 
         <form onSubmit={handleFormSubmit}>
           <input
